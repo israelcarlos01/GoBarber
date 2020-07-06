@@ -1,2 +1,0 @@
-# GoBarber
-Bootcamp Rocketseat
