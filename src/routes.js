@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import UserController from './app/controllers/UserController';
+import SessionController from './app/controllers/SessionController';
+import authMiddleware from './app/middlewares/auth';
 // importação para testar a rota
 // import User from './app/models/User';
 
@@ -17,5 +19,10 @@ const routes = new Router();
 }); */
 
 routes.post('/users', UserController.store);
+routes.post('/sessions', SessionController.store);
+// só passa por esse middleware as rotas que vem depois dele
+routes.use(authMiddleware);
+
+routes.put('/users', UserController.update);
 
 export default routes;
