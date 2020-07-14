@@ -29,6 +29,12 @@ class User extends Model {
     return this;
   }
 
+  static associate(models) {
+    // belongsTo é usado para fins de relacionamento entre tabelas
+    // esse usuario pertence a um model de File.
+    this.belongsTo(models.File, { foreignKey: 'avatar_id', as: 'avatar' });
+  }
+
   // o metodo vai retornar true se as senhas baterem, caso n vai retornar falso.
   checkPassword(password) {
     // o método ta comparando a senha que o user informou com a que existe no banco.
