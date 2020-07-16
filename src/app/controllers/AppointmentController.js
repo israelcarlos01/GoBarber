@@ -1,16 +1,23 @@
 import * as Yup from 'yup';
-import { startOfHour, parseISO, isBefore } from 'date-fns';
+import { startOfHour, parseISO, isBefore, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import User from '../models/User';
 import File from '../models/File';
 import Appointment from '../models/Appointment';
+import Notification from '../schemas/Notification';
 
 class AppointmentController {
   // método de listagem que a gente usa por padrão
   async index(req, res) {
+    const { page = 1 } = req.query;
+
     const appointments = await Appointment.findAll({
       where: { user_id: req.userId, canceled_at: null },
       order: ['date'],
       attributes: ['id', 'date'],
+      limit: 20,
+      // calculo para listar de 20 em 20 registros
+      offset: (page - 1) * 20,
       include: [
         {
           model: User,
@@ -48,6 +55,12 @@ class AppointmentController {
       where: { id: provider_id, provider: true },
     });
 
+    if (req.userId === provider_id) {
+      return res
+        .status(401)
+        .json({ error: 'you cannot create appointments with yourself' });
+    }
+
     if (!checkIsProvider) {
       return res
         .status(401)
@@ -84,6 +97,20 @@ class AppointmentController {
       user_id: req.userId,
       provider_id,
       date,
+    });
+    /*
+      Notificar provedor de serviço.
+    */
+    const user = await User.findByPk(req.userId);
+    const formattedDate = format(
+      hourStart,
+      "'dia' dd 'de' MMMM', às' H:mm'h'",
+      { locale: pt }
+    );
+
+    await Notification.create({
+      content: `Novo agendamento de ${user.name} para o ${formattedDate}`,
+      user: provider_id,
     });
 
     return res.json(appointment);
