@@ -23,6 +23,19 @@ class NotificationController {
       .limit(20);
     return res.json(notifications);
   }
+
+  async update(req, res) {
+    // método do moongose, permite buscar no banco e alterar ao mesmo tempo.
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.id,
+      // marca como lida a notification
+      { read: true },
+      // retorna a notificação atualizada
+      { new: true }
+    );
+
+    return res.json(notification);
+  }
 }
 
 export default new NotificationController();
